@@ -1,0 +1,8 @@
+###### Requirements without Version Specifiers ######
+pathlib
+PyQt5
+git
+selenium
+webdriver_manager
+yaml
+
