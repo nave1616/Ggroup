@@ -1,0 +1,14 @@
+{
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"[javascript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"prettier.useTabs": true,
+	"prettier.tabWidth": 4,
+	"prettier.enableDebugLogs": true,
+	"python.analysis.extraPaths": [
+		"/home/vegi/Desktop/Projects/writer/lib/python3.9",
+		"/home/vegi/.local/lib/python3.9/site-packages",
+		"./lib"
+	]
+}
