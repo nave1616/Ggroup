@@ -17,8 +17,10 @@ import sys
 from os import error
 from time import sleep
 from pathlib import Path
+from Grepo import Grepo
 import pickle
 
+cookieDict = Path(Grepo.path()/'data/cookies')
 # Critcal program cant continue run
 # Error Driver module cannot perform function
 logging.basicConfig(filename='driver.log',level=logging.ERROR,
@@ -35,18 +37,19 @@ class Driver(webdriver.Chrome):
         self.implicitly_wait(10)
     
     def save_cookie(self):
-        with open('/home/vegi/Desktop/Gproject/data/cookies/cookie.pkl', 'wb') as filehandler:
+        cookieDict.mkdir(parents=True, exist_ok=True)
+        with open(cookieDict/'cookie.pkl', 'wb') as filehandler:
             pickle.dump(self.get_cookies(), filehandler)
 
     def load_cookie(self):
-        with open('/home/vegi/Desktop/Gproject/data/cookies/cookie.pkl', 'rb') as cookiesfile:
+        with open(cookieDict/'cookie.pkl', 'rb') as cookiesfile:
             cookies = pickle.load(cookiesfile)
             for cookie in cookies:
                 self.add_cookie(cookie)
                 
     def login(self,usr,pwd):
         url = 'https://market.marmelada.co.il/vendor.php?dispatch=auth.login_form&return_url=vendor.php'
-        if Path('/home/vegi/Desktop/Gproject/data/cookies/cookie.pkl').is_file():
+        if Path(cookieDict/'cookie.pkl').is_file():
             self.get(url)
             self.load_cookie()
             self.refresh()
