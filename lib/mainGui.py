@@ -206,11 +206,18 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         super().__init__(icon,parent)
         self.main_win = parent
         self.repo = git.Repo(Project_path)
+        self.update = False
+        current = self.repo.remotes.origin.fetch()
+        self.repo.remotes.origin.update()
         self.menu = QtWidgets.QMenu(parent)
         usrAction = self.menu.addAction("Change User/Pass")
         usrAction.triggered.connect(self.user)
-        updateAction = self.menu.addAction("Check for updates")
-        updateAction.triggered.connect(self.updates)
+        if current != self.repo.remotes.origin.fetch():
+            self.updateAction = self.menu.addAction("Update")
+            self.update = True
+        else:
+            self.updateAction = self.menu.addAction("Everything up to date")
+        self.updateAction.triggered.connect(self.updates)
         exitAction = self.menu.addAction("Exit")
         exitAction.triggered.connect(self.exit)
         self.setIcon(icon)
@@ -222,12 +229,13 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
             self.main_win.show(True)
     def updates(self):
         try:
-            current = self.repo.head.commit
-            self.repo.remotes.origin.pull()
-            if current != self.repo.head.commit:
-                QMessageBox.about(self.main_win,'Updater','Update succssed')
+            if self.update:
+                self.repo.remotes.origin.pull()
+                QMessageBox.about(self.main_win,'Updater','Update succsesfull')
+                self.updateAction.setText('Everything up to date')
+                self.update = False
             else:
-                QMessageBox.about(self.main_win,'Updater','Everything allready up to date')
+                pass
         except error as msg:
             QMessageBox.about(self.main_win,'Error',msg)
         
