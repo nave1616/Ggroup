@@ -241,7 +241,7 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
             self.updateAction.setText("Error occurred")
             self.updateAction.disconnect()
         return True
-    
+ ######   
     def update(self):
         try:
             self.origin.pull()
