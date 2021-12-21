@@ -210,7 +210,7 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
     def __init__(self,icon, parent):
         super().__init__(icon,parent)
         #Git repository
-        repository = git.repository(Project_path)
+        repository = git.Repo(Project_path)
         
         self.origin = repository.remote('origin') 
         
