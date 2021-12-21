@@ -204,18 +204,17 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
 
     def __init__(self,icon, parent):
         super().__init__(icon,parent)
-        self.main_win = parent
+        #Git repo
         repo = git.Repo(Project_path)
-        self.origin = repo.remote('origin')
-        self.fetch = self.origin.fetch()[0]
+        self.origin = repo.remote('origin') 
+        
+        self.main_win = parent
+        #Main widget
         self.menu = QtWidgets.QMenu(parent)
         usrAction = self.menu.addAction("Change User/Pass")
-        usrAction.triggered.connect(self.user)
-        if self.fetch.flags == 64:
-            self.updateAction = self.menu.addAction("Ready to update")
-        elif self.fetch.flags == 4:
-            self.updateAction = self.menu.addAction("Everything up to date")
-        self.updateAction.triggered.connect(self.updates)
+        usrAction.triggered.connect(self.changeUser)
+        self.updateAction = self.menu.addAction('Everything up to date')
+        self.checkUpdate()
         exitAction = self.menu.addAction("Exit")
         exitAction.triggered.connect(self.exit)
         self.setIcon(icon)
@@ -226,19 +225,37 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         if reason == QtWidgets.QSystemTrayIcon.ActivationReason.Trigger:
             self.main_win.show(True)
     
-    def updates(self):
-        fetch = self.origin.fetch()[0]
+    def checkUpdate(self):
         try:
-            if fetch.flags == 64:
-                self.origin.pull()
-                QMessageBox.about(self.main_win,'Updater','Update succsesfull')
-                self.updateAction.setText('Everything up to date')
-            elif fetch.flags == 4:
-                    self.updateAction.setText('Everything up to date')
+            fetch = self.origin.fetch()[0]
         except:
-            QMessageBox.warning(self,'Error: update faild','הייתה בעיה בהתחברות נסה שוב או דבר עם הנווגי הקרוב לביתך')
+            QMessageBox.warning(self,'Error: update faild','הייתה בעיה בניסיון לעדכן נסה שוב או דבר עם הנווגי הקרוב לביתך')
+            return False
+        if fetch.flags == fetch.FAST_FORWARD:
+            self.updateAction.setText('New update available')
+            self.updateAction.triggered.connect(self.update)
+        elif fetch.flags == fetch.HEAD_UPTODATE:
+            self.updateAction.setText('Everything up to date')
+            self.updateAction.triggered.connect(self.checkUpdate)
+        elif fetch.flags == fetch.ERROR:
+            self.updateAction.setText("Error occurred")
+            self.updateAction.disconnect()
+        return True
+    
+    def update(self):
+        try:
+            self.origin.pull()
+            QMessageBox.about(self.main_win,'Updater','Update succsesfull')
+            self.updateAction.setText('Everything up to date')
+            self.updateAction.triggered.connect(self.check_update)
+        except:
+            QMessageBox.warning(self,'Error: update faild','הייתה בעיה בניסיון לעדכן נסה שוב או דבר עם הנווגי הקרוב לביתך')
+            self.updateAction.setText("Error occurred")
+            self.updateAction.disconnect()
+            return False
+        return True
         
-    def user(self):
+    def changeUser(self):
         self.main_win.show(False)
                  
     def exit(self):
