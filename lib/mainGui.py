@@ -3,7 +3,7 @@ import sys
 from PyQt5 import QtCore, QtGui,QtWidgets,Qt
 from PyQt5.QtWidgets import QApplication,QListWidgetItem,QListWidget,QMainWindow, QMessageBox,QWidget,QPushButton
 from pathlib import Path
-from git import Repo
+import git
 Project_path = path = Path(__file__).resolve().parent.parent
 
 class login_window(QWidget):
@@ -218,9 +218,9 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
     def DoubleClick(self,reason):
         if reason == QtWidgets.QSystemTrayIcon.ActivationReason.Trigger:
             self.main_win.show(True)
-            
     def updates(self):
-       Repo.clone_from('https://github.com/nave1616/Ggroup.git',Project_path/'aviel')
+        gits = git.Git(Project_path)
+        gits.pull('origin','main')
         
     def user(self):
         self.main_win.show(False)
