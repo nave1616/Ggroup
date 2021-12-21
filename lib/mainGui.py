@@ -9,6 +9,7 @@ from Grepo import Grepo
 
 
 from Grepo import Grepo
+from git.repo.base import Repo
 Project_path = Grepo.path()
 
 class login_window(QWidget):
@@ -212,9 +213,8 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
     def __init__(self,icon, parent):
         super().__init__(icon,parent)
         #Git repository
-        repository = git.Repo(Project_path)
-        
-        self.origin = repository.remote('origin') 
+        self.repository = git.Repo(Project_path)
+        self.origin = self.repository.remote('origin') 
         
         self.main_win = parent
         #Main widget
@@ -252,7 +252,7 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
     def update(self):
         self.menu.show()
         try:
-            
+            self.repository.head.reset('HEAD~1', index=True, working_tree=True)
             self.origin.pull()
             QMessageBox.information(self.main_win,'Updater','Update succsesfull\nclosing the app')
             QApplication.exit()
