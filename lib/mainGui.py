@@ -246,9 +246,8 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
     def update(self):
         try:
             self.origin.pull()
-            QMessageBox.about(self.main_win,'Updater','Update succsesfull')
-            self.updateAction.setText('Everything up to date')
-            self.updateAction.triggered.connect(self.checkUpdate)
+            QMessageBox.information(self.main_win,'Updater','Update succsesfull',QMessageBox.Ok)
+            QApplication.exit()
         except:
             QMessageBox.warning(self,'Error: update faild','הייתה בעיה בניסיון לעדכן נסה שוב או דבר עם הנווגי הקרוב לביתך')
             self.updateAction.setText("Error occurred")
