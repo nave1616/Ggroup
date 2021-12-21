@@ -1,4 +1,4 @@
-data/*.yml
+*.yml
 __pychache__/
 **/__pycache__
 **/tempCodeRunnerFile.py
