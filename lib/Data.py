@@ -6,7 +6,7 @@ except ImportError:
     from yaml import Loader, Dumper
 from datetime import datetime,timedelta
 from pathlib import Path
-
+from Grepo import Grepo
 
 
      
@@ -18,8 +18,8 @@ class Singleton(object):
         return cls._instance
 
 class Data:
-    def __init__(self,path):
-        path = Path(path)
+    def __init__(self):
+        path = Grepo.path()
         self.session = Session(path/'data/session.yml')
         self.items = Item(path/'data/items.yml')
         
@@ -145,8 +145,8 @@ class Session:
     
         
 class User:
-    def __init__(self,path):
-        self.path = Path(path/'data/user.yml')
+    def __init__(self):
+        self.path = Grepo.path()/'data/user.yml'
         self.name,self.pwd = None,None
         if self.usr_exists:
             self.name,self.pwd = self.load()

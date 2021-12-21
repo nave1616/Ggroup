@@ -5,14 +5,15 @@ from PyQt5 import QtCore, QtGui,QtWidgets,Qt
 from PyQt5.QtWidgets import QApplication,QListWidgetItem,QListWidget,QMainWindow, QMessageBox,QWidget,QPushButton
 from pathlib import Path
 import git
-Project_path = path = Path(__file__).resolve().parent.parent
+from Grepo import Grepo
+Project_path = Grepo.path()
 
 class login_window(QWidget):
     def __init__(self):
         super().__init__(None)
         
         #Properties
-        path = Path(__file__).resolve().parent.parent/'Icons'
+        path = Grepo.path()/'Icons'
         showIcon = str(path/'visible.png')
         hideIcon = str(path/'hidden.png')
         iconPath = str(path/'Gicon.png')
@@ -97,12 +98,13 @@ class login_window(QWidget):
  
         
 class main_window(QWidget):
-    def __init__(self,path,session,items,user):
+    def __init__(self,session,items,user):
         super().__init__(None)
         
         #Properties
-        checkIcon = path/'Icons/check.png'
-        icon = path/'Icons/Gicon.png'
+        
+        checkIcon = Grepo.path()/'Icons/check.png'
+        icon = Grepo.path()/'Icons/Gicon.png'
         self.checkIcon = QtGui.QIcon(str(checkIcon))
         self.icon = QtGui.QIcon(str(icon))
         self.session = session
@@ -156,8 +158,8 @@ class main_window(QWidget):
             except:
                 QMessageBox.warning(self,'Error: login faild','הייתה בעיה בהתחברות נסה שוב או דבר עם הנווגי הקרוב לביתך')
                 sys.exit()
-            if os.path.isfile(Project_path/'data/cookies/cookie.pkl'):
-                os.remove(Project_path/'data/cookies/cookie.pkl')
+            if os.path.isfile(Grepo.path()/'data/cookies/cookie.pkl'):
+                os.remove(Grepo.path()/'data/cookies/cookie.pkl')
 
           
     def show(self,state=True):
@@ -230,7 +232,7 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
             fetch = self.origin.fetch()[0]
         except:
             QMessageBox.warning(self,'Error: update faild','הייתה בעיה בניסיון לעדכן נסה שוב או דבר עם הנווגי הקרוב לביתך')
-            return False
+            return
         if fetch.flags == fetch.FAST_FORWARD:
             self.updateAction.setText('New update available')
             self.updateAction.triggered.connect(self.update)
@@ -240,18 +242,17 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         elif fetch.flags == fetch.ERROR:
             self.updateAction.setText("Error occurred")
             self.updateAction.disconnect()
-        return True
- ######   
+
     def update(self):
         try:
             self.origin.pull()
             QMessageBox.about(self.main_win,'Updater','Update succsesfull')
             self.updateAction.setText('Everything up to date')
-            self.updateAction.triggered.connect(self.check_update)
+            self.updateAction.triggered.connect(self.checkUpdate)
         except:
             QMessageBox.warning(self,'Error: update faild','הייתה בעיה בניסיון לעדכן נסה שוב או דבר עם הנווגי הקרוב לביתך')
             self.updateAction.setText("Error occurred")
-            self.updateAction.disconnect()
+            self.updateAction.triggered.disconnect()
             return False
         return True
         
