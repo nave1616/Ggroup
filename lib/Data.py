@@ -41,6 +41,7 @@ class Data:
 class Item:
     def __init__(self,path):
         self.path = Path(path)
+        self.path.touch(exist_ok=True)
         self.list = self.load()
         self.len = len(self.list) if self.list else 0
     
@@ -54,12 +55,8 @@ class Item:
             stream.write(output)
     
     def load(self):
-        try:
-            with open(self.path, 'r') as stream:
-                self.list = load(stream, Loader=Loader)
-        except:
-            self.path.touch(exist_ok=True)
-            self.list = []
+        with open(self.path, 'r') as stream:
+            self.list = load(stream, Loader=Loader)  
         return self.list
     
     @property

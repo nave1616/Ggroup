@@ -193,6 +193,8 @@ class main_window(QWidget):
         self.selected = item[0]
         
     def update_items(self,items):
+        if not items:
+            return
         self.listWidget.clear()
         self.selected = None
         self.itemList = []
