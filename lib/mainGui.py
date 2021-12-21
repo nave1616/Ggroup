@@ -1,3 +1,4 @@
+from logging import error
 import os
 import sys
 from PyQt5 import QtCore, QtGui,QtWidgets,Qt
@@ -219,8 +220,11 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         if reason == QtWidgets.QSystemTrayIcon.ActivationReason.Trigger:
             self.main_win.show(True)
     def updates(self):
-        gits = git.Git(Project_path)
-        gits.pull('origin','main')
+        try:
+            gits = git.Git(Project_path)
+            gits.pull('origin','main')
+        except error as msg:
+            QMessageBox.info('s',msg)
         
     def user(self):
         self.main_win.show(False)
