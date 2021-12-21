@@ -5,7 +5,7 @@ from PyQt5 import QtCore, QtGui,QtWidgets,Qt
 from PyQt5.QtWidgets import QApplication,QListWidgetItem,QListWidget,QMainWindow, QMessageBox,QWidget,QPushButton
 from pathlib import Path
 import git
-
+from Grepo import Grepo
 
 
 from Grepo import Grepo
