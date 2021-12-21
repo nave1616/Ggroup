@@ -216,6 +216,7 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         usrAction = self.menu.addAction("Change User/Pass")
         usrAction.triggered.connect(self.changeUser)
         self.updateAction = self.menu.addAction('Everything up to date')
+        
         self.checkUpdate()
         exitAction = self.menu.addAction("Exit")
         exitAction.triggered.connect(self.exit)
@@ -244,6 +245,7 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
             self.updateAction.disconnect()
 
     def update(self):
+        self.menu.show()
         try:
             self.origin.pull()
             QMessageBox.information(self.main_win,'Updater','Update succsesfull\nclosing the app')
