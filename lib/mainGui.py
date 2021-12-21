@@ -1,8 +1,11 @@
-from os import error
+from logging import error
+import os
+import sys
 from PyQt5 import QtCore, QtGui,QtWidgets,Qt
 from PyQt5.QtWidgets import QApplication,QListWidgetItem,QListWidget,QMainWindow, QMessageBox,QWidget,QPushButton
 from pathlib import Path
-
+import git
+Project_path = path = Path(__file__).resolve().parent.parent
 
 class login_window(QWidget):
     def __init__(self):
@@ -50,7 +53,7 @@ class login_window(QWidget):
         
         #Buttons
         self.connect_btn = QtWidgets.QPushButton(self)
-        self.connect_btn.setGeometry(QtCore.QRect(60, 112, 89, 25))
+        self.connect_btn.setGeometry(QtCore.QRect(62, 110, 89, 30))
         self.connect_btn.setText( "התחבר")
         self.user_approved = False
         self.pass_approved = False
@@ -121,6 +124,8 @@ class main_window(QWidget):
         #Login
         self.login = login_window()
         self.login.connect_btn.clicked.connect(self.connect_clicked)
+        self.login.Password.returnPressed.connect(self.connect_clicked)
+        self.login.User_name.returnPressed.connect(self.connect_clicked)
         
         #Systray
         self.tray = SystemTrayIcon(self.icon,self)     
@@ -138,19 +143,21 @@ class main_window(QWidget):
         #Buttons
         self.update_btn = QtWidgets.QPushButton(self)
         self.update_btn.setText('update')
-        self.update_btn.setGeometry(QtCore.QRect(170, 160, 81, 25))
+        self.update_btn.setGeometry(QtCore.QRect(165, 160, 81, 30))
         self.update_btn.clicked.connect(self.update_checked)
         
     def connect_clicked(self):
         if self.login.pass_approved and self.login.user_approved:
             try:
                 self.user.create(self.login.User_name.text(),self.login.Password.text())
-                self.trayNotify('התחברות בוצעה בהצלחה')
                 self.login.hide()
                 self.show()
+                self.trayNotify('התחברות בוצעה בהצלחה')
             except:
                 QMessageBox.warning(self,'login faild','הייתה בעיה בהתחברות נסה שוב או דבר עם הנווגי הקרוב לביתך')
-                QApplication.exit()
+                sys.exit()
+            if os.path.isfile(Project_path/'data/cookies/cookie.pkl'):
+                os.remove(Project_path/'data/cookies/cookie.pkl')
 
           
     def show(self,state=True):
@@ -201,6 +208,8 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         self.menu = QtWidgets.QMenu(parent)
         usrAction = self.menu.addAction("Change User/Pass")
         usrAction.triggered.connect(self.user)
+        updateAction = self.menu.addAction("Check for updates")
+        updateAction.triggered.connect(self.updates)
         exitAction = self.menu.addAction("Exit")
         exitAction.triggered.connect(self.exit)
         self.setIcon(icon)
@@ -210,6 +219,12 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
     def DoubleClick(self,reason):
         if reason == QtWidgets.QSystemTrayIcon.ActivationReason.Trigger:
             self.main_win.show(True)
+    def updates(self):
+        try:
+            gits = git.Git(Project_path)
+            gits.pull('origin','main')
+        except error as msg:
+            QMessageBox.info('s',msg)
         
     def user(self):
         self.main_win.show(False)

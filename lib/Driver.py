@@ -16,7 +16,8 @@ import logging
 import sys
 from os import error
 from time import sleep
-
+from pathlib import Path
+import pickle
 
 # Critcal program cant continue run
 # Error Driver module cannot perform function
@@ -33,8 +34,25 @@ class Driver(webdriver.Chrome):
         super().__init__(service=service,options=self.options)
         self.implicitly_wait(10)
     
+    def save_cookie(self):
+        with open('/home/vegi/Desktop/Gproject/data/cookies/cookie.pkl', 'wb') as filehandler:
+            pickle.dump(self.get_cookies(), filehandler)
+
+    def load_cookie(self):
+        with open('/home/vegi/Desktop/Gproject/data/cookies/cookie.pkl', 'rb') as cookiesfile:
+            cookies = pickle.load(cookiesfile)
+            for cookie in cookies:
+                self.add_cookie(cookie)
+                
     def login(self,usr,pwd):
         url = 'https://market.marmelada.co.il/vendor.php?dispatch=auth.login_form&return_url=vendor.php'
+        if Path('/home/vegi/Desktop/Gproject/data/cookies/cookie.pkl').is_file():
+            self.get(url)
+            self.load_cookie()
+            self.refresh()
+            self.popOver_Handler()
+            self.product()
+            return True
         try:
             self.get(url)
         except InvalidArgumentException as msg:
@@ -48,6 +66,7 @@ class Driver(webdriver.Chrome):
         uname.send_keys(usr)
         upwd.send_keys(pwd)
         submmit.click()
+        self.save_cookie()
         sleep(2)
         self.popOver_Handler()
      
@@ -105,4 +124,6 @@ class Driver(webdriver.Chrome):
         
         
 if __name__ == '__main__':
-    pass
+    driver = Driver()
+    driver.login('club.wine.israel@gmail.com','123456')
+    driver.close()
