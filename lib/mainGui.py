@@ -207,14 +207,13 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         self.main_win = parent
         repo = git.Repo(Project_path)
         self.origin = repo.remote('origin')
-        catch = self.origin.fetch()[0]
-        self.hasUpdate = catch.hasUpdates
+        self.fetch = self.origin.fetch()[0]
         self.menu = QtWidgets.QMenu(parent)
         usrAction = self.menu.addAction("Change User/Pass")
         usrAction.triggered.connect(self.user)
-        if self.hasUpdate == 64:
-            self.updateAction = self.menu.addAction("ready to update")
-        elif self.hasUpdate == 4:
+        if self.fetch.flags == 64:
+            self.updateAction = self.menu.addAction("Ready to update")
+        elif self.fetch.flags == 4:
             self.updateAction = self.menu.addAction("Everything up to date")
         self.updateAction.triggered.connect(self.updates)
         exitAction = self.menu.addAction("Exit")
@@ -229,12 +228,14 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
     
     def updates(self):
         try:
-            if self.hasUpdate == 64:
+            if self.fetch.flags == 64:
                 self.origin.pull()
                 QMessageBox.about(self.main_win,'Updater','Update succsesfull')
                 self.updateAction.setText('Everything up to date')
-            else:
-                pass
+            elif self.fetch.flags == 4:
+                self.fetch = self.origin.fetch()[0]
+                if self.fetch.flags == 64:
+                    self.updateAction.setText('Ready to update')
         except error as msg:
             QMessageBox.about(self.main_win,'Error',msg)
         
