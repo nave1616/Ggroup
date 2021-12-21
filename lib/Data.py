@@ -58,6 +58,7 @@ class Item:
             with open(self.path, 'r') as stream:
                 self.list = load(stream, Loader=Loader)
         except:
+            self.path.touch(exist_ok=True)
             self.list = []
         return self.list
     

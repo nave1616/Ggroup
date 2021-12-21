@@ -5,6 +5,9 @@ from PyQt5 import QtCore, QtGui,QtWidgets,Qt
 from PyQt5.QtWidgets import QApplication,QListWidgetItem,QListWidget,QMainWindow, QMessageBox,QWidget,QPushButton
 from pathlib import Path
 import git
+
+
+
 from Grepo import Grepo
 Project_path = Grepo.path()
 
@@ -206,9 +209,10 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
 
     def __init__(self,icon, parent):
         super().__init__(icon,parent)
-        #Git repo
-        repo = git.Repo(Project_path)
-        self.origin = repo.remote('origin') 
+        #Git repository
+        repository = git.repository(Project_path)
+        
+        self.origin = repository.remote('origin') 
         
         self.main_win = parent
         #Main widget
@@ -247,6 +251,7 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
     def update(self):
         self.menu.show()
         try:
+            
             self.origin.pull()
             QMessageBox.information(self.main_win,'Updater','Update succsesfull\nclosing the app')
             QApplication.exit()
