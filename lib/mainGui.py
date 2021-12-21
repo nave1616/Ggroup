@@ -223,6 +223,7 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         try:
             gits = git.Git(Project_path)
             gits.pull('origin','main')
+            QMessageBox.info('s','everything up to date')
         except error as msg:
             QMessageBox.info('s',msg)
         
