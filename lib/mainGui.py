@@ -227,13 +227,13 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
             self.main_win.show(True)
     
     def updates(self):
-        flag = self.fetch.flags
+        fetch = self.origin.fetch()[0]
         try:
-            if flag == 64:
+            if fetch.flags == 64:
                 self.origin.pull()
                 QMessageBox.about(self.main_win,'Updater','Update succsesfull')
                 self.updateAction.setText('Everything up to date')
-            elif flag == 4:
+            elif fetch.flags == 4:
                     self.updateAction.setText('Everything up to date')
         except:
             QMessageBox.warning(self,'Error: update faild','הייתה בעיה בהתחברות נסה שוב או דבר עם הנווגי הקרוב לביתך')
