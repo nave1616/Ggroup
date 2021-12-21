@@ -241,9 +241,11 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
             return
         if fetch.flags == fetch.FAST_FORWARD:
             self.updateAction.setText('New update available')
+            self.updateAction.disconnect(self.checkUpdate)
             self.updateAction.triggered.connect(self.update)
         elif fetch.flags == fetch.HEAD_UPTODATE:
             self.updateAction.setText('Everything up to date')
+            self.updateAction.disconnect(self.update)
             self.updateAction.triggered.connect(self.checkUpdate)
         elif fetch.flags == fetch.ERROR:
             self.updateAction.setText("Error occurred")
