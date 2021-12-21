@@ -54,8 +54,11 @@ class Item:
             stream.write(output)
     
     def load(self):
-        with open(self.path, 'r') as stream:
-            self.list = load(stream, Loader=Loader)
+        try:
+            with open(self.path, 'r') as stream:
+                self.list = load(stream, Loader=Loader)
+        except:
+            self.list = None
         return self.list
     
     @property
