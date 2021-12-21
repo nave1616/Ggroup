@@ -213,8 +213,7 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
     def __init__(self,icon, parent):
         super().__init__(icon,parent)
         #Git repository
-        self.repository = git.Repo(Project_path)
-        self.origin = self.repository.remote('origin') 
+        self.repository = Grepo()
         
         self.main_win = parent
         #Main widget
@@ -235,27 +234,26 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
     
     def checkUpdate(self):
         try:
-            fetch = self.origin.fetch()[0]
+            flag = self.repository.hasUpdate()
         except:
             QMessageBox.warning(self.main_win,'Error: update faild','הייתה בעיה בניסיון לעדכן נסה שוב או דבר עם הנווגי הקרוב לביתך')
             return
-        if fetch.flags == fetch.FAST_FORWARD:
+        if flag == self.repository.FAST_FORWARD:
             self.updateAction.setText('New update available')
-            self.updateAction.disconnect(self.checkUpdate)
+            self.updateAction.disconnect()
             self.updateAction.triggered.connect(self.update)
-        elif fetch.flags == fetch.HEAD_UPTODATE:
+        elif flag == self.repository.HEAD_UPTODATE:
             self.updateAction.setText('Everything up to date')
-            self.updateAction.disconnect(self.update)
+            self.updateAction.disconnect()
             self.updateAction.triggered.connect(self.checkUpdate)
-        elif fetch.flags == fetch.ERROR:
+        elif flag == self.repository.ERROR:
             self.updateAction.setText("Error occurred")
             self.updateAction.disconnect()
 
     def update(self):
         self.menu.show()
         try:
-            self.repository.head.reset('HEAD~1', index=True, working_tree=True)
-            self.origin.pull()
+            self.repository.pull()
             QMessageBox.information(self.main_win,'Updater','Update succsesfull\nclosing the app')
             QApplication.exit()
         except:
