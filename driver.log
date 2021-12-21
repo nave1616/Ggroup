@@ -4,7 +4,7 @@
 12/21/21 00:36:INFO Current google-chrome version is 96.0.4664
 12/21/21 00:36:INFO Get LATEST chromedriver version for 96.0.4664 google-chrome
 12/21/21 00:36:INFO Trying to download new driver from https://chromedriver.storage.googleapis.com/96.0.4664.45/chromedriver_linux64.zip
-12/21/21 00:36:INFO Driver has been saved in cache [/home/vegi/.wdm/drivers/chromedffdriver/linux64/96.0.4664.45]
+12/21/21 00:36:INFO Driver has been saved in cache [/home/vegi/.wdm/drivers/chromedffsdriver/linux64/96.0.4664.45]
 12/21/21 00:39:INFO 
 
 12/21/21 00:39:INFO ====== WebDriver manager ======
