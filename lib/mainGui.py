@@ -1,7 +1,7 @@
 from logging import error
 import os
 import sys
-from PyQt5 import QtCore, QtGui,QtWidgets,Qt
+from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import QApplication,QListWidgetItem,QListWidget,QMainWindow, QMessageBox,QWidget,QPushButton
 from pathlib import Path
 import git
@@ -217,22 +217,25 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         
         self.main_win = parent
         #Main widget
-        self.menu = QtWidgets.QMenu(parent)
-        usrAction = self.menu.addAction("Change User/Pass")
+        menu = QtWidgets.QMenu()
+        usrAction = menu.addAction("Change User/Pass")
         usrAction.triggered.connect(self.changeUser)
-        self.updateAction = self.menu.addAction('Everything up to date')
-        self.checkUpdate()
-        exitAction = self.menu.addAction("Exit")
+        self.updateAction = menu.addAction('check for updates')
+        self.updateAction.triggered.connect(self.checkUpdate)
+        #self.updateAction.installEventFilter()
+        exitAction = menu.addAction("Exit")
         exitAction.triggered.connect(self.exit)
         self.setIcon(icon)
         self.activated.connect(self.DoubleClick)
-        self.setContextMenu(self.menu)
+        self.setContextMenu(menu)
+
         
     def DoubleClick(self,reason):
         if reason == QtWidgets.QSystemTrayIcon.ActivationReason.Trigger:
             self.main_win.show(True)
     
     def checkUpdate(self):
+        self.contextMenu().exec_(self.contextMenu().pos())
         try:
             flag = self.repository.hasUpdate()
         except:
@@ -251,7 +254,6 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
             self.updateAction.disconnect()
 
     def update(self):
-        self.menu.show()
         try:
             self.repository.pull()
             QMessageBox.information(self.main_win,'Updater','Update succsesfull\nclosing the app')
