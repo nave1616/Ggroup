@@ -154,7 +154,7 @@ class main_window(QWidget):
                 self.show()
                 self.trayNotify('התחברות בוצעה בהצלחה')
             except:
-                QMessageBox.warning(self,'login faild','הייתה בעיה בהתחברות נסה שוב או דבר עם הנווגי הקרוב לביתך')
+                QMessageBox.warning(self,'Error: login faild','הייתה בעיה בהתחברות נסה שוב או דבר עם הנווגי הקרוב לביתך')
                 sys.exit()
             if os.path.isfile(Project_path/'data/cookies/cookie.pkl'):
                 os.remove(Project_path/'data/cookies/cookie.pkl')
@@ -227,17 +227,16 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
             self.main_win.show(True)
     
     def updates(self):
+        flag = self.fetch.flags
         try:
-            if self.fetch.flags == 64:
+            if flag == 64:
                 self.origin.pull()
                 QMessageBox.about(self.main_win,'Updater','Update succsesfull')
                 self.updateAction.setText('Everything up to date')
-            elif self.fetch.flags == 4:
-                self.fetch = self.origin.fetch()[0]
-                if self.fetch.flags == 64:
-                    self.updateAction.setText('Ready to update')
-        except error as msg:
-            QMessageBox.about(self.main_win,'Error',msg)
+            elif flag == 4:
+                    self.updateAction.setText('Everything up to date')
+        except:
+            QMessageBox.warning(self,'Error: update faild','הייתה בעיה בהתחברות נסה שוב או דבר עם הנווגי הקרוב לביתך')
         
     def user(self):
         self.main_win.show(False)
