@@ -223,9 +223,9 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         try:
             gits = git.Git(Project_path)
             gits.pull('origin','main')
-            QMessageBox.info('s','everything up to date')
+            QMessageBox.about(self.main_win,'s','up to date')
         except error as msg:
-            QMessageBox.info('s',msg)
+            QMessageBox.about(self.main_win,'s',msg)
         
     def user(self):
         self.main_win.show(False)
