@@ -208,13 +208,13 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         self.repo = git.Repo(Project_path)
         self.origin = self.repo.remote('origin')
         catch = self.origin.fetch()[0]
-        flag = catch.flags
+        self.flag = catch.flags
         self.menu = QtWidgets.QMenu(parent)
         usrAction = self.menu.addAction("Change User/Pass")
         usrAction.triggered.connect(self.user)
-        if flag == 64:
+        if self.flag == 64:
             self.updateAction = self.menu.addAction("ready to update")
-        elif flag == 4:
+        elif self.flag == 4:
             self.updateAction = self.menu.addAction("Everything up to date")
         self.updateAction.triggered.connect(self.updates)
         exitAction = self.menu.addAction("Exit")
@@ -228,11 +228,10 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
             self.main_win.show(True)
     def updates(self):
         try:
-            if self.update:
+            if self.flag == 64:
                 self.origin.pull()
                 QMessageBox.about(self.main_win,'Updater','Update succsesfull')
                 self.updateAction.setText('Everything up to date')
-                self.update = False
             else:
                 pass
         except error as msg:
