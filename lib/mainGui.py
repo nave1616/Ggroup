@@ -205,16 +205,16 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
     def __init__(self,icon, parent):
         super().__init__(icon,parent)
         self.main_win = parent
-        self.repo = git.Repo(Project_path)
-        self.origin = self.repo.remote('origin')
+        repo = git.Repo(Project_path)
+        self.origin = repo.remote('origin')
         catch = self.origin.fetch()[0]
-        self.flag = catch.flags
+        self.hasUpdate = catch.hasUpdates
         self.menu = QtWidgets.QMenu(parent)
         usrAction = self.menu.addAction("Change User/Pass")
         usrAction.triggered.connect(self.user)
-        if self.flag == 64:
+        if self.hasUpdate == 64:
             self.updateAction = self.menu.addAction("ready to update")
-        elif self.flag == 4:
+        elif self.hasUpdate == 4:
             self.updateAction = self.menu.addAction("Everything up to date")
         self.updateAction.triggered.connect(self.updates)
         exitAction = self.menu.addAction("Exit")
@@ -226,9 +226,10 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
     def DoubleClick(self,reason):
         if reason == QtWidgets.QSystemTrayIcon.ActivationReason.Trigger:
             self.main_win.show(True)
+    
     def updates(self):
         try:
-            if self.flag == 64:
+            if self.hasUpdate == 64:
                 self.origin.pull()
                 QMessageBox.about(self.main_win,'Updater','Update succsesfull')
                 self.updateAction.setText('Everything up to date')
