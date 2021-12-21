@@ -232,7 +232,7 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         try:
             fetch = self.origin.fetch()[0]
         except:
-            QMessageBox.warning(self,'Error: update faild','הייתה בעיה בניסיון לעדכן נסה שוב או דבר עם הנווגי הקרוב לביתך')
+            QMessageBox.warning(self.main_win,'Error: update faild','הייתה בעיה בניסיון לעדכן נסה שוב או דבר עם הנווגי הקרוב לביתך')
             return
         if fetch.flags == fetch.FAST_FORWARD:
             self.updateAction.setText('New update available')
@@ -251,7 +251,7 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
             QMessageBox.information(self.main_win,'Updater','Update succsesfull\nclosing the app')
             QApplication.exit()
         except:
-            QMessageBox.warning(self,'Error: update faild','הייתה בעיה בניסיון לעדכן נסה שוב או דבר עם הנווגי הקרוב לביתך')
+            QMessageBox.warning(self.main_win,'Error: update faild','הייתה בעיה בניסיון לעדכן נסה שוב או דבר עם הנווגי הקרוב לביתך')
             self.updateAction.setText("Error occurred")
             self.updateAction.triggered.disconnect()
             return False
