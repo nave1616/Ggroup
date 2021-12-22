@@ -2,7 +2,7 @@ import git
 from pathlib import Path
 file_path = Path(__file__).resolve()
 
-class Grepo(git.Repo):
+class gitRepo(git.Repo):
     def __init__(self) -> None:
         super().__init__()
         self.repository = git.Repo(file_path,search_parent_directories=True)
@@ -26,5 +26,5 @@ class Grepo(git.Repo):
         
         
 if __name__ == '__main__':
-    grepo = Grepo()
-    print(grepo.ERROR)
+    gitRepo = gitRepo()
+    print(gitRepo.ERROR)
