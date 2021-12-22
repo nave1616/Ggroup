@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 path = Path(__file__).resolve().parent
 sys.path.append(str(path/'lib'))
-from Grepo import Grepo
+from gitRepo import gitRepo
 from Data import *
 from mainGui import *
 from datetime import datetime
@@ -11,7 +11,7 @@ import threading
 from time import sleep
 
 
-with open(Grepo.path()/'Style.qss','r') as styleFile:
+with open(gitRepo.path()/'Style.qss','r') as styleFile:
     qss = styleFile.read()
 
 if __name__ == '__main__':
