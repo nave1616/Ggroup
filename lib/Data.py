@@ -6,59 +6,53 @@ except ImportError:
     from yaml import Loader, Dumper
 from datetime import datetime,timedelta
 from pathlib import Path
-from Grepo import Grepo
+from gitRepo import gitRepo
 
-
-     
-class Singleton(object):
-    _instance = None
-    def __new__(cls, *args):
-        if not cls._instance:
-            cls._instance = super(Singleton, cls).__new__(cls)
-        return cls._instance
 
 class Data:
     def __init__(self):
-        path = Grepo.path()
-        self.session = Session(path/'data/session.yml')
-        self.items = Item(path/'data/items.yml')
+        path = (gitRepo.path()/'data')
+        if isinstance(self,Item):
+            setattr(self,'path',path/'items.yml')
+            self.path.touch(exist_ok=True)
+            setattr(self,'list',list())
+        elif isinstance(self,Session):
+            setattr(self,'path',path/'session.yml')
+            setattr(self,'session',dict())
+        elif isinstance(self,User):
+            setattr(self,'user',dict())
+        self.load()
         
     def update(self):
-        self.session.update()
-        self.items.update()
-    
+        output = dump(self.data, Dumper=Dumper,allow_unicode=True)        
+        with open(self.path, 'w') as stream:
+            stream.write(output)
+            return self.data
+        
     def load(self):
-        self.session.load()
-        self.items.load()
+        with open(self.path, 'r') as stream:
+            self.data = load(stream, Loader=Loader)
+            return self.data
     
     def __str__(self) -> str:
-        return f'{self.session} , {self.items}'
+        return f'{self.data}'
     
     def __repr__(self):
         return '<{0}.{1} object at {2}>'.format(
         self.__module__, type(self).__name__, hex(id(self)))
 
-class Item:
-    def __init__(self,path):
-        self.path = Path(path)
-        self.path.touch(exist_ok=True)
-        self.list = self.load()
+class Item(Data):
+    def __init__(self):
+        super().__init__()
         self.len = len(self.list) if self.list else 0
     
     def add_items(self,items):
         self.list = items
         self.update()
-        
-    def update(self):
-        output = dump(self.list, Dumper=Dumper,allow_unicode=True)        
-        with open(self.path, 'w') as stream:
-            stream.write(output)
     
     def load(self):
-        with open(self.path, 'r') as stream:
-            self.list = load(stream, Loader=Loader)  
-        return self.list
-    
+        self.list = super().load()
+
     @property
     def checked(self):
         for index in range(self.len):
@@ -66,14 +60,7 @@ class Item:
                 return index+1
         return -1
     
-    def __str__(self) -> str:
-        if not self.list:
-            return 'Items: Empty'
-        return f'{self.list}'
-    
-    def __repr__(self):
-        return '<{0}.{1} object at {2}>'.format(
-        self.__module__, type(self).__name__, hex(id(self)))
+
         
 class Session:
     def __init__(self,path):
@@ -147,7 +134,7 @@ class Session:
         
 class User:
     def __init__(self):
-        self.path = Grepo.path()/'data/user.yml'
+        self.path = gitRepo.path()/'data/user.yml'
         self.name,self.pwd = None,None
         if self.usr_exists:
             self.name,self.pwd = self.load()
@@ -176,7 +163,7 @@ class User:
 
 
 if __name__ == '__main__':      
-    data = Data('/home/vegi/Desktop/Projects/Gimpel/data')
-    data.load()
+    data = Item()
+
 
  
