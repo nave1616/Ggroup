@@ -5,19 +5,16 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import QApplication,QListWidgetItem,QListWidget,QMainWindow, QMessageBox,QWidget,QPushButton
 from pathlib import Path
 import git
-from Grepo import Grepo
-
-
-from Grepo import Grepo
+from gitRepo import gitRepo
 from git.repo.base import Repo
-Project_path = Grepo.path()
+Project_path = gitRepo.path()
 
 class login_window(QWidget):
     def __init__(self):
         super().__init__(None)
         
         #Properties
-        path = Grepo.path()/'Icons'
+        path = gitRepo.path()/'Icons'
         showIcon = str(path/'visible.png')
         hideIcon = str(path/'hidden.png')
         iconPath = str(path/'Gicon.png')
@@ -72,9 +69,9 @@ class login_window(QWidget):
 
     def login_approve(self):
         mail_list = ['@gmail,@walla,@hotmail']
+        ending = ['co.il','com']
         if any(self.User_name.text() in string for string in mail_list)\
-            or ('.com' not in self.User_name.text()\
-            and '.co.il' not in self.User_name.text())\
+            or any(self.User_name.text() in string for string in mail_list)\
             or 0 < len(self.User_name.text()) < 5:
             self.uname_error.setText("מייל לא תקין")
             self.user_approved = False
@@ -107,8 +104,8 @@ class main_window(QWidget):
         
         #Properties
         
-        checkIcon = Grepo.path()/'Icons/check.png'
-        icon = Grepo.path()/'Icons/Gicon.png'
+        checkIcon = gitRepo.path()/'Icons/check.png'
+        icon = gitRepo.path()/'Icons/Gicon.png'
         self.checkIcon = QtGui.QIcon(str(checkIcon))
         self.icon = QtGui.QIcon(str(icon))
         self.session = session
@@ -162,8 +159,8 @@ class main_window(QWidget):
             except:
                 QMessageBox.warning(self,'Error: login faild','הייתה בעיה בהתחברות נסה שוב או דבר עם הנווגי הקרוב לביתך')
                 sys.exit()
-            if os.path.isfile(Grepo.path()/'data/cookies/cookie.pkl'):
-                os.remove(Grepo.path()/'data/cookies/cookie.pkl')
+            if os.path.isfile(gitRepo.path()/'data/cookies/cookie.pkl'):
+                os.remove(gitRepo.path()/'data/cookies/cookie.pkl')
 
           
     def show(self,state=True):
@@ -213,7 +210,7 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
     def __init__(self,icon, parent):
         super().__init__(icon,parent)
         #Git repository
-        self.repository = Grepo()
+        self.repository = gitRepo()
         
         self.main_win = parent
         #Main widget

@@ -15,11 +15,10 @@ with open(gitRepo.path()/'Style.qss','r') as styleFile:
 
 if __name__ == '__main__':
     show = True
-    data = Data()
-    user = User()
+    items,session,user = Item(),Session(),User()
     if not user.usr_exists:
         show = False
-    session,items = data.session,data.items
+    #session,items = data.session,data.items
     last,next,repeat = session.toprint()
    
     app = QtWidgets.QApplication(sys.argv)
@@ -27,7 +26,7 @@ if __name__ == '__main__':
     
     main = main_window(session,items,user)
     main.set_labels(last,next,repeat)
-    main.update_items(items.list)
+    main.update_items(items.data)
     main.show(show)
     sys.exit(app.exec_())
     

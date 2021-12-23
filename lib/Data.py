@@ -8,34 +8,49 @@ from datetime import datetime,timedelta
 from pathlib import Path
 from gitRepo import gitRepo
 
+def next_time(date,time):
+    '''return data object +time hours'''
+    return date+timedelta(hours=time)   
 
+def datetime_to_str(data):
+    '''Return str from datetime object'''
+    return data.strftime("%H:%M %d-%m-%y")
+
+def str_now():
+    '''Return current date %H:%M %d-%m-%y'''
+    return datetime.now().strftime("%H:%M %d-%m-%y")    
+
+def Todate():
+    '''Return current date "%d-%m-%y"'''
+    return datetime.now().date().strftime("%d-%m-%y")
+
+def str_to_date(str):
+    '''Return datetime object from str %H:%M %d-%m-%y'''
+    return datetime.strptime(str,"%H:%M %d-%m-%y")  
+
+def datetime_now():
+    '''Return datetime object time now %H:%M %d-%m-%y'''
+    return str_to_date(str_now())
 class Data:
-    def __init__(self):
-        path = (gitRepo.path()/'data')
+    def __init__(self,filename):
+        self.path = gitRepo.path()/f'data/{filename}'
         if isinstance(self,Item):
-            setattr(self,'path',path/'items.yml')
             self.path.touch(exist_ok=True)
-            setattr(self,'list',list())
-        elif isinstance(self,Session):
-            setattr(self,'path',path/'session.yml')
-            setattr(self,'session',dict())
-        elif isinstance(self,User):
-            setattr(self,'user',dict())
-        self.load()
-        
+        self.load
+      
     def update(self):
         output = dump(self.data, Dumper=Dumper,allow_unicode=True)        
         with open(self.path, 'w') as stream:
             stream.write(output)
             return self.data
-        
+    
+    @property
     def load(self):
+        if not self.path.exists():
+            return
         with open(self.path, 'r') as stream:
             self.data = load(stream, Loader=Loader)
             return self.data
-    
-    def __str__(self) -> str:
-        return f'{self.data}'
     
     def __repr__(self):
         return '<{0}.{1} object at {2}>'.format(
@@ -43,101 +58,74 @@ class Data:
 
 class Item(Data):
     def __init__(self):
-        super().__init__()
-        self.len = len(self.list) if self.list else 0
+        super().__init__('items.yml')
     
     def add_items(self,items):
-        self.list = items
+        self.data = items
         self.update()
-    
-    def load(self):
-        self.list = super().load()
 
     @property
     def checked(self):
-        for index in range(self.len):
+        for index in range(len(self.data)):
             if self.list[index].get("state") == 2:
                 return index+1
         return -1
-    
-
-        
-class Session:
-    def __init__(self,path):
-        self.path = Path(path)
-        self.date = datetime.now().date().strftime("%d-%m-%y")
+     
+class Session(Data):
+    def __init__(self):
+        super().__init__('session.yml')
+        self.date = Todate()
         if not self.path.exists():
             self.create()
-        self.__session = self.load()
     
-    def update(self):
-        data = {"last":self.last,"next":self.next,"repeat":self.repeat}
-        output = dump(data, Dumper=Dumper)
-        with open(self.path, 'w') as stream:
-            stream.write(output)
-
-    def load(self):
-        with open(self.path, 'r') as stream:
-            self.__session = load(stream, Loader=Loader)
-        return self.__session
      
     def create(self):
-        last = datetime.now().replace(second=0,microsecond=0)
-        next = (last + timedelta(hours=7))
-        self.__session = {'last':last,'next':next,'repeat':0}
+        last = datetime_now()
+        next = next_time(last,7)
+        self.data = {'last':last,'next':next,'repeat':0}
         self.update()
-        return self.__session
+        return self.data
     
     def toprint(self):
-        last = self.__session["last"].strftime("%H:%M %d-%m-%y")
-        next = self.__session["next"].strftime("%H:%M %d-%m-%y")
-        repeat = self.__session["repeat"]
+        last = datetime_to_str(self.data["last"])
+        next = datetime_to_str(self.data["next"])
+        repeat = self.data["repeat"]
         return (last,next,str(repeat))
     
     @property
     def next(self):
-        return self.__session["next"]
+        return self.data["next"]
     
     @next.setter
     def next(self,value):
-        self.__session["next"] = value
+        self.data["next"] = value
     
     @property
     def last(self):
-        return self.__session["last"]
+        return self.data["last"]
     
     @last.setter
     def last(self,value):
         value = ' '.join([value,self.date])
-        self.__session["last"] = datetime.strptime(value,"%H:%M %d-%m-%y")
+        self.data["last"] = str_to_date(value)
         if self.repeat == 1:
-            self.next = self.__session["last"]+timedelta(hours=17)
+            self.next = next_time(self.data["last"],17)
         else:
-            self.next = self.__session["last"]+timedelta(hours=7)
+            self.next = next_time(self.data["last"],7)
     
     @property
     def repeat(self):
-        return self.__session["repeat"]
+        return self.data["repeat"]
     
     @repeat.setter
     def repeat(self,value):
-        self.__session["repeat"] = value%3
-        return self.__session["repeat"]
-    
-    def __str__(self) -> str:
-        return f'Last: {self.last} , Next: {self.next} , Repeat: {self.repeat}'
-    
-    def __repr__(self):
-        return '<{0}.{1} object at {2}>'.format(
-        self.__module__, type(self).__name__, hex(id(self)))
-    
-        
+        self.data["repeat"] = value%3
+        return self.data["repeat"]
+          
 class User:
     def __init__(self):
-        self.path = gitRepo.path()/'data/user.yml'
-        self.name,self.pwd = None,None
-        if self.usr_exists:
-            self.name,self.pwd = self.load()
+        self.path = Path(gitRepo.path()/f'data/user.yml')
+        print(self.path)
         
     @property
     def usr_exists(self):
@@ -146,7 +134,10 @@ class User:
         return True
     
     def update(self):
-        data = {"name":self.name,"pwd":self.pwd}
+        try:
+            data = {"name":self.name,"pwd":self.pwd}
+        except AttributeError:
+            return 
         output = dump(data, Dumper=Dumper)
         with open(self.path, 'w') as stream:
             stream.write(output)
@@ -154,6 +145,7 @@ class User:
     def load(self):
         with open(self.path, 'r') as stream:
             usr = load(stream, Loader=Loader)
+            self.name,self.pwd = usr["name"],usr["pwd"]
             return usr["name"],usr["pwd"]
             
     def create(self,name,pwd):
@@ -163,7 +155,9 @@ class User:
 
 
 if __name__ == '__main__':      
-    data = Item()
+    data = Session()
+    print(data.last)
+
 
 
  
