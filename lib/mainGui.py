@@ -1,10 +1,9 @@
 
 import sys
-from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtCore import QPoint, Qt
-from PyQt5.QtWidgets import QApplication,QListWidgetItem,QListWidget,QMainWindow, QMenu, QMessageBox, QSystemTrayIcon,QWidget,QPushButton
-from pathlib import Path
 import re
+from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5.QtWidgets import QApplication,QListWidgetItem, QMenu, QMessageBox, QSystemTrayIcon,QWidget
+from pathlib import Path
 from gitRepo import gitRepo
 
 Project_path = gitRepo.path()

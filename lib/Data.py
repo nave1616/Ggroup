@@ -31,30 +31,25 @@ def str_to_date(str):
 def datetime_now():
     '''Return datetime object time now %H:%M %d-%m-%y'''
     return str_to_date(str_now())
+
 class Data:
     def __init__(self,filename):
         self.path = gitRepo.path()/f'data/{filename}'
         if isinstance(self,Item):
             self.path.touch(exist_ok=True)
-        self.load
+        self.load()
       
     def update(self):
         output = dump(self.data, Dumper=Dumper,allow_unicode=True)        
         with open(self.path, 'w') as stream:
             stream.write(output)
             return self.data
-    
-    @property
     def load(self):
         if not self.path.exists():
             return
         with open(self.path, 'r') as stream:
             self.data = load(stream, Loader=Loader)
             return self.data
-    
-    def __repr__(self):
-        return '<{0}.{1} object at {2}>'.format(
-        self.__module__, type(self).__name__, hex(id(self)))
 
 class Item(Data):
     def __init__(self):
@@ -78,7 +73,6 @@ class Session(Data):
         if not self.path.exists():
             self.create()
     
-     
     def create(self):
         last = datetime_now()
         next = next_time(last,7)
@@ -86,7 +80,7 @@ class Session(Data):
         self.update()
         return self.data
     
-    def toprint(self):
+    def text(self):
         last = datetime_to_str(self.data["last"])
         next = datetime_to_str(self.data["next"])
         repeat = self.data["repeat"]
@@ -122,7 +116,7 @@ class Session(Data):
         self.data["repeat"] = value%3
         return self.data["repeat"]
           
-class User:
+class User(Data):
     def __init__(self):
         self.path = Path(gitRepo.path()/f'data/user.yml')
         
@@ -131,26 +125,11 @@ class User:
         if not self.path.exists():
             return False
         return True
-    
-    def update(self):
-        try:
-            data = {"name":self.name,"pwd":self.pwd}
-        except AttributeError:
-            return 
-        output = dump(data, Dumper=Dumper)
-        with open(self.path, 'w') as stream:
-            stream.write(output)
-
-    def load(self):
-        with open(self.path, 'r') as stream:
-            usr = load(stream, Loader=Loader)
-            self.name,self.pwd = usr["name"],usr["pwd"]
-            return usr["name"],usr["pwd"]
             
     def create(self,name,pwd):
-        self.name,self.pwd = name,pwd
+        self.data = {"name":name,"pwd":pwd}
         self.update()
-        return {'name':name,'pwd':pwd}
+        return self.data
 
 
 if __name__ == '__main__':      
