@@ -1,14 +1,15 @@
-from logging import error
-import os
+
 import sys
 from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtWidgets import QApplication,QListWidgetItem,QListWidget,QMainWindow, QMessageBox,QWidget,QPushButton
+from PyQt5.QtCore import QPoint, Qt
+from PyQt5.QtWidgets import QApplication,QListWidgetItem,QListWidget,QMainWindow, QMenu, QMessageBox, QSystemTrayIcon,QWidget,QPushButton
 from pathlib import Path
-import git
+import re
 from gitRepo import gitRepo
-from git.repo.base import Repo
-Project_path = gitRepo.path()
 
+Project_path = gitRepo.path()
+cookies_path = Path(gitRepo.path()/'data/cookies/cookie.pkl')
+navegiMsg ='הייתה בעיה בניסיון לעדכן נסה שוב או דבר עם הנווגי הקרוב לביתך'
 class login_window(QWidget):
     def __init__(self):
         super().__init__(None)
@@ -35,14 +36,12 @@ class login_window(QWidget):
         #enteries
         self.User_name = QtWidgets.QLineEdit(self)
         self.User_name.setGeometry(QtCore.QRect(10, 10, 165, 25))
-        self.User_name.setText("")
-        self.User_name.textChanged[str].connect(self.login_approve)
+        #self.User_name.textChanged[str].connect(self.login_approve)
 
         self.Password = QtWidgets.QLineEdit(self)
         self.Password.setGeometry(QtCore.QRect(10, 60, 165, 25))
         self.Password.setEchoMode(QtWidgets.QLineEdit.Password)
-        self.Password.setText("")
-        self.Password.textChanged[str].connect(self.login_approve)
+        #self.Password.textChanged[str].connect(self.login_approve)
         
         #labels
         self.uname_error = QtWidgets.QLabel(self)
@@ -66,25 +65,23 @@ class login_window(QWidget):
         self.show_btn.setIcon(self.showIcon)
         self.show_btn.setCheckable(True)
         self.show_btn.clicked.connect(self.show_hide)
-
+    
     def login_approve(self):
-        mail_list = ['@gmail,@walla,@hotmail']
-        ending = ['co.il','com']
-        if any(self.User_name.text() in string for string in mail_list)\
-            or any(self.User_name.text() in string for string in mail_list)\
-            or 0 < len(self.User_name.text()) < 5:
-            self.uname_error.setText("מייל לא תקין")
-            self.user_approved = False
-        else:
+        regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+        if re.fullmatch(regex, self.User_name.text()):
             self.user_approved = True
             self.uname_error.setText("")
-        if 0 < len(self.Password.text()) < 5:
-            self.pass_error.setText("שגיאה: 5 תווים לפחות")
+        else:
             self.user_approved = False
+            self.uname_error.setText("מייל לא תקין")
+        if 0 <= len(self.Password.text()) < 5:
+            self.pass_approved = False
+            self.pass_error.setText("שגיאה: 5 תווים לפחות")
         else:
             self.pass_approved = True
             self.pass_error.setText("")
-
+        return self.pass_approved and self.user_approved
+             
     def closeEvent(self,event):
         event.ignore()
         self.hide()
@@ -131,7 +128,9 @@ class main_window(QWidget):
         self.login.User_name.returnPressed.connect(self.connect_clicked)
         
         #Systray
-        self.tray = SystemTrayIcon(self.icon,self)     
+        self.tray = SystemTrayIcon(self.icon,self)
+        self.updater = Updater(self,self.tray)
+        self.tray.updateAction.triggered.connect(self.updater.checkUpdate)
         
         #Lables
         self.jump_lbl = QtWidgets.QLabel(self)
@@ -150,18 +149,12 @@ class main_window(QWidget):
         self.update_btn.clicked.connect(self.update_checked)
         
     def connect_clicked(self):
-        if self.login.pass_approved and self.login.user_approved:
-            try:
-                self.user.create(self.login.User_name.text(),self.login.Password.text())
-                self.login.hide()
-                self.show()
-                self.trayNotify('התחברות בוצעה בהצלחה')
-            except:
-                QMessageBox.warning(self,'Error: login faild','הייתה בעיה בהתחברות נסה שוב או דבר עם הנווגי הקרוב לביתך')
-                sys.exit()
-            if os.path.isfile(gitRepo.path()/'data/cookies/cookie.pkl'):
-                os.remove(gitRepo.path()/'data/cookies/cookie.pkl')
-
+        if self.login.login_approve():
+            self.user.create(self.login.User_name.text(),self.login.Password.text())
+            self.login.hide()
+            self.show()
+            self.tray.showMessage('','התחברות בוצעה בהצלחה',self.icon)
+            cookies_path.unlink(missing_ok=True)
           
     def show(self,state=True):
         if state:
@@ -176,9 +169,6 @@ class main_window(QWidget):
         event.ignore()
         self.hide()
     
-    def trayNotify(self,msg):
-        self.tray.showMessage('התראת מערכת',msg,msecs=10)
-        
     def set_labels(self,last,next,repeat):
         self.jump_lbl.setText("Today jump: "+repeat)
         self.last_lbl.setText("Last: "+last)
@@ -186,9 +176,12 @@ class main_window(QWidget):
     
     def update_checked(self):
         item = self.listWidget.selectedItems()
-        item[0].setIcon(self.checkIcon)
-        self.selected.setIcon(QtGui.QIcon())
-        self.selected = item[0]
+        try:
+            item[0].setIcon(self.checkIcon)
+            self.selected.setIcon(QtGui.QIcon())
+            self.selected = item[0]
+        except:
+            None
         
     def update_items(self,items):
         if not items:
@@ -203,77 +196,84 @@ class main_window(QWidget):
                 Item.setIcon(self.checkIcon)
                 self.selected = Item
             self.itemList.append(Item)
-            
-
+          
 class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
 
     def __init__(self,icon, parent):
         super().__init__(icon,parent)
-        #Git repository
-        self.repository = gitRepo()
-        
         self.main_win = parent
-        #Main widget
-        menu = QtWidgets.QMenu()
-        usrAction = menu.addAction("Change User/Pass")
-        usrAction.triggered.connect(self.changeUser)
-        self.updateAction = menu.addAction('check for updates')
-        self.updateAction.triggered.connect(self.checkUpdate)
-        #self.updateAction.installEventFilter()
-        exitAction = menu.addAction("Exit")
-        exitAction.triggered.connect(self.exit)
+        menu = QMenu(parent)
+        self.icon = icon
+        self.userAction = menu.addAction("Change User/Pass",self.changeUser)
+        self.updateAction = menu.addAction('check for updates')            
+        self.exitAction = menu.addAction("Exit",QApplication.exit)
         self.setIcon(icon)
-        self.activated.connect(self.DoubleClick)
+        self.activated.connect(self.mousePressEvent)
         self.setContextMenu(menu)
 
+    def mousePressEvent(self,reason):
+        if reason == QSystemTrayIcon.Trigger:
+            self.main_win.show()
+            
+    def changeUser(self):
+        self.main_win.show(False)
+
+class Updater():
+    def __init__(self,window,tray):
+        self.repository = gitRepo()
+        self.tray = tray
+        self.window = window
         
-    def DoubleClick(self,reason):
-        if reason == QtWidgets.QSystemTrayIcon.ActivationReason.Trigger:
-            self.main_win.show(True)
-    
     def checkUpdate(self):
-        self.contextMenu().exec_(self.contextMenu().pos())
         try:
             flag = self.repository.hasUpdate()
         except:
-            QMessageBox.warning(self.main_win,'Error: update faild','הייתה בעיה בניסיון לעדכן נסה שוב או דבר עם הנווגי הקרוב לביתך')
+            QMessageBox.warning(self.window,'Error: update faild',navegiMsg)
             return
         if flag == self.repository.FAST_FORWARD:
-            self.updateAction.setText('New update available')
-            self.updateAction.disconnect()
-            self.updateAction.triggered.connect(self.update)
+            self.updateAvailable()
         elif flag == self.repository.HEAD_UPTODATE:
-            self.updateAction.setText('Everything up to date')
-            self.updateAction.disconnect()
-            self.updateAction.triggered.connect(self.checkUpdate)
+            self.tray.showMessage('Everything up to date','',self.tray.icon)
+            self.tray.updateAction.setText('Everything up to date')
         elif flag == self.repository.ERROR:
-            self.updateAction.setText("Error occurred")
-            self.updateAction.disconnect()
-
+            self.tray.updateAction.setText("Error occurred")
+            self.tray.updateAction.disconnect()
+    
+    def updateAvailable(self):
+        msg = self.tray.showMessage('New update available','you can click to update',self.tray.icon)
+        msg.clicked.connect(self.update)
+        self.tray.updateAction.setText('Update now')
+        self.tray.updateAction.disconnect()
+        self.tray.updateAction.triggered.connect(self.update)
+    
     def update(self):
         try:
             self.repository.pull()
-            QMessageBox.information(self.main_win,'Updater','Update succsesfull\nclosing the app')
+            QMessageBox.information(self.window,'Updater','Update succsesfull\nclosing the app')
             QApplication.exit()
         except:
-            QMessageBox.warning(self.main_win,'Error: update faild','הייתה בעיה בניסיון לעדכן נסה שוב או דבר עם הנווגי הקרוב לביתך')
-            self.updateAction.setText("Error occurred")
-            self.updateAction.triggered.disconnect()
+            QMessageBox.warning(self.window,'Error: update faild','הייתה בעיה בניסיון לעדכן נסה שוב או דבר עם הנווגי הקרוב לביתך')
+            self.tray.updateAction.setText("Error occurred")
+            self.tray.updateAction.triggered.disconnect()
             return False
-        return True
-        
-    def changeUser(self):
-        self.main_win.show(False)
-                 
-    def exit(self):
-      QApplication.exit()
-      
-if __name__ == '__Main__':
+        return True                
+class Menu(QMenu):
+    def __init__(self,parent,tray):
+        super().__init__(parent)
+        self.addAction("Change User/Pass",tray.changeUser)
+        self.updateAction = self.addAction('check for updates',tray.checkUpdate)            
+        self.addAction("Exit",QApplication.exit)
+    def exec_(self):
+        super().show()
+               
+if __name__ == '__main__':
     import sys
     app = QApplication(sys.argv)
-    app.setQuitOnLastWindowClosed(False)
-    main = main_window()
-    #main.set_labels('14','22','15')
+    w = QWidget()
+    icon = gitRepo.path()/'Icons/Gicon.png'
+    icon = QtGui.QIcon(str(icon))
+    tray = QSystemTrayIcon(icon,w)
+    main = Menu(w,tray)
 
     main.show()
     sys.exit(app.exec_())

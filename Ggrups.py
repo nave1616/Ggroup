@@ -18,7 +18,6 @@ if __name__ == '__main__':
     items,session,user = Item(),Session(),User()
     if not user.usr_exists:
         show = False
-    #session,items = data.session,data.items
     last,next,repeat = session.toprint()
    
     app = QtWidgets.QApplication(sys.argv)

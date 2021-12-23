@@ -125,7 +125,6 @@ class Session(Data):
 class User:
     def __init__(self):
         self.path = Path(gitRepo.path()/f'data/user.yml')
-        print(self.path)
         
     @property
     def usr_exists(self):
