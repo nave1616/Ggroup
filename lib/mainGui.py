@@ -186,6 +186,8 @@ class main_window(QWidget):
     
     def update_checked(self):
         item = self.listWidget.selectedItems()
+        if not item:
+            return
         item[0].setIcon(self.checkIcon)
         self.selected.setIcon(QtGui.QIcon())
         self.selected = item[0]
