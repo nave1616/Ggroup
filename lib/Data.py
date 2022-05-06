@@ -6,7 +6,7 @@ except ImportError:
     from yaml import Loader, Dumper
 from datetime import datetime,timedelta
 from pathlib import Path
-from Grepo import Grepo
+from gitRepo import gitRepo as Grepo
 
 
      

@@ -1,0 +1,6 @@
+pathlib
+PyQt5
+selenium
+webdriver_manager
+pyyaml
+GitPython

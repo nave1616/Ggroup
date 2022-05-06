@@ -5,10 +5,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import QApplication,QListWidgetItem,QListWidget,QMainWindow, QMessageBox,QWidget,QPushButton
 from pathlib import Path
 import git
-from Grepo import Grepo
-
-
-from Grepo import Grepo
+from gitRepo import gitRepo as Grepo
 from git.repo.base import Repo
 Project_path = Grepo.path()
 

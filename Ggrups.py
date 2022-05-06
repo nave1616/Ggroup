@@ -5,8 +5,6 @@ sys.path.append(str(path/'lib'))
 from gitRepo import gitRepo
 from Data import *
 from mainGui import *
-from datetime import datetime
-import threading
 from time import sleep
 
 
