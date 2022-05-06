@@ -9,6 +9,7 @@
 	"python.analysis.extraPaths": [
 		"/home/vegi/Desktop/Projects/writer/lib/python3.9",
 		"/home/vegi/.local/lib/python3.9/site-packages",
+		"C:\\Users\\nave1\\AppData\\Local\\Programs\\Python\\Python310",
 		"./lib",
 		"./lib"
 	]
